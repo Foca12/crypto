@@ -4,9 +4,12 @@
 #include "crypt/mix_columns.hpp"
 #include "crypt/shift_rows.hpp"
 #include "crypt/sub_bytes.hpp"
+#include "../bytearray.hpp"
 #include "message.hpp"
 #include "key.hpp"
 
+
+// encrypts a single state
 State encrypt_aes(State state, const Key& key){
   if (! key.is_expanded()){
     throw std::runtime_error("Trying to crypt a message with an unexpanded key, expand it by call key.expand()");
@@ -26,7 +29,10 @@ State encrypt_aes(State state, const Key& key){
   return state;
 }
 
-Message encrypt_aes(Message message, const Key& key){
+// encrypts using ECB mode
+Bytearray encrypt_aes(const Bytearray& plain, const Key& key){
+  Message message = Message::divide_bytearray(plain);
+
   // verifies padding integrity
   const State& last_state = message.state(-1);
   for (size_t i = 1; i <= last_state[-1]; i++){
@@ -35,14 +41,17 @@ Message encrypt_aes(Message message, const Key& key){
     }
   }
 
-  for (size_t i = 0; i < message.length(); i++){
-    message.state(i) = encrypt_aes(message.state(i), key);
+  for (State& state : message.state_iterator()){
+    state = encrypt_aes(state, key);
   }
 
   return message;
 }
 
-Message encrypt_aes(Message message, const Key& key, const State& iv){
+// encrypts using CBC mode
+Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& iv){
+  Message message = Message::divide_bytearray(plain);
+  
   // verifies padding integrity
   const State& last_state = message.state(-1);
   for (size_t i = 1; i <= last_state[-1]; i++){
@@ -51,9 +60,10 @@ Message encrypt_aes(Message message, const Key& key, const State& iv){
     }
   }
 
+  // foreach state calculates encrypt and calculates xor with previous iv or encrypted state
   for (size_t state_idx = 0; state_idx < message.length(); state_idx++){
     State& result = message.state(state_idx);
-    result ^= state_idx == 0? iv : message.state(state_idx-1);
+    result ^= state_idx == 0? State(iv) : message.state(state_idx-1);
     result = encrypt_aes(result, key);
 
     message.state(state_idx) = result;
@@ -62,7 +72,7 @@ Message encrypt_aes(Message message, const Key& key, const State& iv){
   return message;
 }
 
-
+// decrypts a single state
 State decrypt_aes(State state, const Key& key){
   if (! key.is_expanded()){
     throw std::runtime_error("Trying to decrypt an encrypted message with an unexpanded key, expand it by call key.expand()");
@@ -83,29 +93,39 @@ State decrypt_aes(State state, const Key& key){
   return state;
 }
 
-aes_types::ilist decrypt_aes(Message encrypted, const Key& key){
-  for (size_t i = 0; i < encrypted.length(); i++){
-    encrypted.state(i) = decrypt_aes(encrypted.state(i), key);
+// decrypts using ECB mode
+Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, bool remove_padding = true){
+  Message encrypted = Message::divide_bytearray(cipher);
+  encrypted.squeeze(); // removes extra state padding
+
+  for (State& state : encrypted.state_iterator()){
+    state = decrypt_aes(state, key);
   }
 
-  // verifies padding integrity
+  Bytearray result = encrypted;
+  // verifies padding integrity and removes it
   const State& last_state = encrypted.state(-1);
   for (size_t i = 1; i <= last_state[-1]; i++){
     if (last_state[-i] != last_state[-1]){
       throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
     }
+    if (remove_padding){
+      result.pop_back();
+    }
   }
-
-  // removes padding bytes
-  aes_types::ilist result;
-  result.assign(encrypted.begin(), encrypted.end()-encrypted[-1]);
 
   return result;
 }
 
-aes_types::ilist decrypt_aes(Message encrypted, const Key& key, const State& iv){
+// decrypts using CBC mode
+Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const State& iv, bool remove_padding=true){
+  Message encrypted = Message::divide_bytearray(cipher);
   Message decrypted = encrypted;
-  for (size_t state_idx = 0; state_idx < encrypted.length(); state_idx++){
+  decrypted.squeeze(); // removes extra state padding
+
+  // foreach state in decrypted
+  for (size_t state_idx = 0; state_idx < decrypted.length(); state_idx++){
+    // decrypts single state and calculates xor with iv or previous encrypted state
     State& result = decrypted.state(state_idx);
     result = decrypt_aes(result, key);
     result ^= state_idx == 0? iv : encrypted.state(state_idx-1);
@@ -113,17 +133,17 @@ aes_types::ilist decrypt_aes(Message encrypted, const Key& key, const State& iv)
     decrypted.state(state_idx) = result;
     }
 
-  // verifies padding integrity
+  Bytearray result = decrypted;
+  // verifies padding integrity and removes it
   const State& last_state = decrypted.state(-1);
   for (size_t i = 1; i <= last_state[-1]; i++){
     if (last_state[-i] != last_state[-1]){
       throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
     }
+    if (remove_padding){
+      result.pop_back();
+    }
   }
-
-  // removes padding bytes
-  aes_types::ilist result;
-  result.assign(decrypted.begin(), decrypted.end()-decrypted[-1]);
 
   return result;
 }

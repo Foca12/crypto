@@ -89,6 +89,12 @@ class Message {
     return message;
   }
 
+  void squeeze() {
+    if (this->state(-1)[-1] == aes_constants::state_chars){
+      this->states.pop_back();
+    }
+  }
+
   void clear() {
     for (State& current_state : this->states){
       current_state.clear();
