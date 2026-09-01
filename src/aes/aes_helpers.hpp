@@ -77,6 +77,7 @@ namespace aes_constants
 } // namespace aes_constants
 
 
+class Bytearray;
 class State;
 namespace aes_types
 {
@@ -97,7 +98,7 @@ namespace aes_types
 
 
   // class types
-  using word_list = std::vector<aes_types::state_column>;
+  using word_list = std::vector<Bytearray>;
 } // namespace aes_types
 
 

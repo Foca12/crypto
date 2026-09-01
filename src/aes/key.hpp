@@ -1,61 +1,53 @@
 #pragma once
 
-#include "helpers.hpp"
+#include "aes_helpers.hpp"
 #include "crypt/sub_bytes.hpp"
 
 class Key {
   private:
-  static aes_types::state_column g(aes_types::state_column x, size_t round) {
-    x = aes_functions::shift_row_left(x, 1);
+  static Bytearray g(Bytearray x, size_t round) {
+    x = x.shift_left(1);
     x = crypt_operations::sub_bytes(x);
     x[0] ^= aes_constants::rcon[round];
     return x;
   }
 
   
-  static aes_types::state_column calc_key128_word(const aes_types::word_list& words, size_t word_idx){
+  static Bytearray calc_key128_word(const aes_types::word_list& words, size_t word_idx){
     if (word_idx < 4){
       return words[word_idx];
     }
 
-    aes_types::state_column a = words[word_idx-1];
-    aes_types::state_column b = words[word_idx-4];
+    Bytearray a = words[word_idx-1];
+    Bytearray b = words[word_idx-4];
     if (word_idx % 4 == 0){
       a = Key::g(a, word_idx / 4);
     }
-    
-    for (int i = 0; i < aes_constants::state_rows; i++){
-      a[i] ^= b[i];
-    }
-    return a;
+    return a ^ b;
   }
 
-  static aes_types::state_column calc_key192_word(const aes_types::word_list& words, size_t word_idx){
+  static Bytearray calc_key192_word(const aes_types::word_list& words, size_t word_idx){
     if (word_idx < 6){
       return words[word_idx];
     }
 
-    aes_types::state_column a = words[word_idx-1];
-    aes_types::state_column b = words[word_idx-6];
+    Bytearray a = words[word_idx-1];
+    Bytearray b = words[word_idx-6];
 
     if (word_idx % 6 == 0){
       a = Key::g(a, word_idx / 6);
     }
 
-    for (size_t i = 0; i < aes_constants::state_rows; i++){
-      a[i] ^= b[i];
-    }
-
-    return a;
+    return a ^ b;
   }
 
-  static aes_types::state_column calc_key256_word(const aes_types::word_list& words, size_t word_idx){
+  static Bytearray calc_key256_word(const aes_types::word_list& words, size_t word_idx){
     if (word_idx < 8) {
       return words[word_idx];
     }
 
-    aes_types::state_column a = words[word_idx-1];
-    aes_types::state_column b = words[word_idx-8];
+    Bytearray a = words[word_idx-1];
+    Bytearray b = words[word_idx-8];
 
     if (word_idx % 8 == 0){
       a = Key::g(a, word_idx / 8);
@@ -64,19 +56,14 @@ class Key {
       a = crypt_operations::sub_bytes(a);
     }
 
-    for (size_t i = 0; i < aes_constants::state_rows; i++){
-      a[i] ^= b[i];
-    }
-
-
-    return a;
+    return a ^ b;
   }
 
 
   struct key_spec
   {
     size_t chars, start_words, total_words, total_rounds;
-    aes_types::state_column (* calc_word)(const aes_types::word_list&, size_t);
+    Bytearray (* calc_word)(const aes_types::word_list&, size_t);
   };
   
   // contains aes128, aes192 and aes256
@@ -111,7 +98,7 @@ class Key {
   ~Key() {
     this->clear();
   }
-  Key (const aes_types::ilist& bytes){
+  Key (const Bytearray& bytes){
     for (auto& key_spec : Key::global_key_specs){
       // if input length matches with a key length
       if (bytes.size() == key_spec.chars){
@@ -120,11 +107,10 @@ class Key {
 
         // iterates through bytes, divide it into word array and pushes them in this->bytes
         for (size_t word_idx = 0; word_idx < key_spec.start_words; word_idx++){
-          aes_types::state_column word;
-          
           size_t start_bias = word_idx*aes_constants::state_rows;
           size_t end_bias = (word_idx+1)*aes_constants::state_rows;
-          std::copy(start_bias+bytes.data(), end_bias+bytes.data(), word.data());
+
+          Bytearray word = bytes.slice(start_bias, end_bias);
           this->words.push_back(word);
         }
         return;
@@ -134,11 +120,8 @@ class Key {
   }
 
   void clear(){
-    for (auto& word : this->words) {
-      volatile uint8_t* ptr = word.data();
-      for (size_t i = 0; i < aes_constants::state_rows; i++){
-        ptr[i] = 0;
-      }
+    for (Bytearray& word : this->words){
+      word.clear();
     }
   }
 
@@ -148,8 +131,9 @@ class Key {
     }
     this->expanded = true;
 
-    for (size_t word_idx = this->key_specs.start_words; word_idx < this->key_specs.total_words; word_idx++){
-      this->words.push_back((*(this->key_specs.calc_word))(this->words, word_idx));
+    for (size_t i = this->key_specs.start_words; i < this->key_specs.total_words; i++){
+      // uses the key_specs.calc_word function ptr to calculate new word
+      this->words.push_back((*(this->key_specs.calc_word))(this->words, i));
     }
   }
 
@@ -171,35 +155,19 @@ class Key {
   }
 
   std::string hex(bool all_keys=0) const {
-    if (all_keys){
-      aes_types::ilist vct;
-      for (const aes_types::state_column& word : this->words){
-        vct.insert(vct.end(), word.begin(), word.end());
-      }
-      return aes_functions::basic_hex(vct);
+    Bytearray arr;
+    size_t end_idx = all_keys? this->key_specs.total_words : this->key_specs.start_words;
+    for (size_t i = 0; i < end_idx; i++){
+      arr.extend(this->words[i]);
     }
-    else{
-      aes_types::ilist vct;
-      for (size_t word_idx = 0; word_idx < this->key_specs.start_words; word_idx++){
-        vct.insert(vct.end(), this->words[word_idx].begin(), this->words[word_idx].end());
-      }
-      return aes_functions::basic_hex(vct);
-    }
+    return arr.hex();
   }
   std::string oct(bool all_keys=0) const {
-    if (all_keys){
-      aes_types::ilist vct;
-      for (const aes_types::state_column& word : this->words){
-        vct.insert(vct.end(), word.begin(), word.end());
-      }
-      return aes_functions::basic_oct(vct);
+    Bytearray arr;
+    size_t end_idx = all_keys? this->key_specs.total_words : this->key_specs.start_words;
+    for (size_t i = 0; i < end_idx; i++){
+      arr.extend(this->words[i]);
     }
-    else{
-      aes_types::ilist vct;
-      for (size_t word_idx = 0; word_idx < this->key_specs.start_words; word_idx++){
-        vct.insert(vct.end(), this->words[word_idx].begin(), this->words[word_idx].end());
-      }
-      return aes_functions::basic_oct(vct);
-    }
+    return arr.oct();
   }
 };
