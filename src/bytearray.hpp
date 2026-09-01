@@ -147,7 +147,7 @@ class Bytearray{
     }
 
     for (size_t i = 0; i < this->length(); i++){
-      result.push_back(result[i] | arr[i]);
+      result[i] = result[i] | arr[i];
     }
     return result;
   }
@@ -159,7 +159,7 @@ class Bytearray{
     }
 
     for (size_t i = 0; i < this->length(); i++){
-      result.push_back(result[i] & arr[i]);
+      result[i] = result[i] & arr[i];
     }
     return result;
   }
@@ -171,7 +171,7 @@ class Bytearray{
     }
 
     for (size_t i = 0; i < this->length(); i++){
-      result.push_back(result[i] ^ arr[i]);
+      result[i] = result[i] ^ arr[i];
     }
     return result;
   }
