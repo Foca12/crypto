@@ -1,14 +1,17 @@
 #pragma once
 
-#include "../helpers.hpp"
+#include "../aes_helpers.hpp"
+#include "../state.hpp"
+#include "../message.hpp"
+#include "../../bytearray.hpp"
 
 namespace crypt_operations
 { 
-  aes_types::state_column basic_mix_columns(
-      aes_types::state_column column, 
+  Bytearray basic_mix_columns(
+      Bytearray column, 
       const std::function<uint8_t(uint8_t)> matrix[aes_constants::state_rows][aes_constants::state_rows]){
 
-    aes_types::state_column result;
+    Bytearray result;
 
     // foreach element in the column
     for (size_t result_idx = 0; result_idx < aes_constants::state_rows; result_idx++){
@@ -17,12 +20,12 @@ namespace crypt_operations
       for (size_t mul_idx = 0; mul_idx < aes_constants::state_rows; mul_idx++){
         sum ^= matrix[result_idx][mul_idx](column[mul_idx]);
       }
-      result[result_idx] = sum;
+      result.push_back(sum);
     }
     return result;
   }
 
-  aes_types::state_column mix_columns(aes_types::state_column column){
+  Bytearray mix_columns(Bytearray column){
     return basic_mix_columns(column, aes_functions::mul_matrix);
   }
   State mix_columns(State state){
@@ -32,15 +35,15 @@ namespace crypt_operations
     }
     return result;
   }
-  Message mix_columns(const Message& message){
-    Message result = message;
-    for (size_t i = 0; i < result.length(); i++){
-      result.state(i) = mix_columns(result.state(i));
+  Message mix_columns(Message message){
+    for (State& state : message.state_iterator()){
+      state = crypt_operations::mix_columns(state);
     }
-    return result;
+    return message;
   }
 
-  aes_types::state_column inv_mix_columns(aes_types::state_column column){
+
+  Bytearray inv_mix_columns(Bytearray column){
     return basic_mix_columns(column, aes_functions::inv_mul_matrix);
   }
   State inv_mix_columns(State state){
@@ -50,11 +53,10 @@ namespace crypt_operations
     }
     return result;
   }
-  Message inv_mix_columns(const Message& message){
-    Message result = message;
-    for (size_t i = 0; i < result.length(); i++){
-      result.state(i) = inv_mix_columns(result.state(i));
+  Message inv_mix_columns(Message message){
+    for (State& state : message.state_iterator()){
+      state = crypt_operations::inv_mix_columns(state);
     }
-    return result;
+    return message;
   }
 }

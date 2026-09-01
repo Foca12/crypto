@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../helpers.hpp"
+#include "../aes_helpers.hpp"
 #include "../state.hpp"
 #include "../message.hpp"
+#include "../../bytearray.hpp"
 #include "../key.hpp"
 
 namespace crypt_operations
@@ -14,17 +15,16 @@ namespace crypt_operations
       throw std::out_of_range("Round index is bigger than key rounds");
     }
 
+    size_t first_key_word_idx = round*aes_constants::state_columns;
+    aes_types::state_matrix_column columns = state.get_columns();
+
     // foreach word in state
     for (size_t word_idx = 0; word_idx < aes_constants::state_columns; word_idx++){
-      size_t first_key_word_idx = round*aes_constants::state_columns;
 
-      aes_types::state_column current_state_word = state.get_column(word_idx);
-      aes_types::state_column current_key_word = key.get_words()[first_key_word_idx+word_idx];
+      Bytearray current_state_word = columns[word_idx];
+      Bytearray current_key_word = key.get_words()[first_key_word_idx+word_idx];
 
-      // foreach char in word
-      for (size_t char_idx = 0; char_idx < aes_constants::state_columns; char_idx++){
-        current_state_word[char_idx] ^= current_key_word[char_idx];
-      }
+      current_state_word ^= current_key_word;
 
       state.set_column(word_idx, current_state_word);
     }
@@ -33,8 +33,8 @@ namespace crypt_operations
   }
   
   Message add_round_key(Message message, const Key& key, size_t round){
-    for (size_t i = 0; i < message.length(); i++){
-      message.state(i) = crypt_operations::add_round_key(message.state(i), key, round);
+    for (State& state : message.state_iterator()){
+      state = crypt_operations::add_round_key(state, key, round);
     }
     return message;
   }
