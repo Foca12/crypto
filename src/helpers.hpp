@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include <array>
+#include <ranges>
 
 class State;
 namespace crypto_types
@@ -20,10 +21,8 @@ namespace crypto_types
   using iarr = std::array<uint8_t, len>;
   using ilist = std::vector<uint8_t>;
 
-  template <size_t len>
-  using iarr_c_iterator = typename std::array<uint8_t, len>::const_iterator;
-  template <size_t len>
-  using iarr_iterator = typename std::array<uint8_t, len>::iterator;
+  using ilist_c_iterator = typename crypto_types::ilist::const_iterator;
+  using ilist_iterator = typename crypto_types::ilist::iterator;
 } // namespace crypto_types
 
 
