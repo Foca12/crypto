@@ -1,6 +1,7 @@
 #pragma once
 
-#include "helpers.hpp"
+#include "aes_helpers.hpp"
+#include "../bytearray.hpp"
 #include "state.hpp"
 
 class Message {
@@ -57,24 +58,23 @@ class Message {
   }
 
   static Message divide_string(const std::string& bytes){
-    aes_types::ilist vct;
+    Bytearray arr;
     for (auto i : bytes){
-      vct.push_back(static_cast<uint8_t> (i));
+      arr.push_back(static_cast<uint8_t> (i));
     }
-    return Message::divide_ilist(vct);
+    return Message::divide_bytearray(arr);
   }
-  static Message divide_ilist(aes_types::ilist bytes){
+  static Message divide_bytearray(Bytearray bytes){
     // total states
     size_t states = bytes.size() / aes_constants::state_chars + 1;
     Message message (states);
 
     // foreach full state
     for (size_t state_idx = 0; state_idx < states-1; state_idx++){
-      // slices bytes into State using std::copy
-      State current;
+      // slices bytes into State
       size_t start_offset = state_idx*aes_constants::state_chars;
       size_t end_offset = (state_idx+1)*aes_constants::state_chars;
-      std::copy(bytes.begin()+start_offset, bytes.begin()+end_offset, current.begin());
+      State current (bytes.slice(start_offset, end_offset));
 
       message.state(state_idx) = current;
     }
@@ -182,14 +182,14 @@ class Message {
     return this->operator=(this->operator|(state));
   }
 
-  Message operator>> (const int rounds) const {
+  Message operator>> (const size_t rounds) const {
     Message result = *this;
     for (size_t i = 0; i < result.length(); i++){
       result.state(i) = result.state(i) >> rounds;
     }
     return result;
   }
-  Message operator<< (const int rounds) const {
+  Message operator<< (const size_t rounds) const {
     Message result = *this;
     for (size_t i = 0; i < result.length(); i++){
       result.state(i) = result.state(i) << rounds;
@@ -197,21 +197,21 @@ class Message {
     return result;
   }
 
-  Message& operator>>=(const int rounds) {
+  Message& operator>>=(const size_t rounds) {
     return this->operator=(this->operator>>(rounds));
   }
-  Message& operator<<=(const int rounds) {
+  Message& operator<<=(const size_t rounds) {
     return this->operator=(this->operator<<(rounds));
   }
 
-  Message shift_left(int rounds) const {
+  Message shift_left(size_t rounds) const {
     Message result = *this;
     for (size_t i = 0; i < result.length(); i++){
       result.state(i) = result.state(i).shift_left(rounds);
     }
     return result;
   }
-  Message shift_right(int rounds) const {
+  Message shift_right(size_t rounds) const {
     Message result = *this;
     for (size_t i = 0; i < result.length(); i++){
       result.state(i) = result.state(i).shift_right(rounds);
@@ -219,7 +219,7 @@ class Message {
     return result;
   }
 
-  // cast di tipi
+  // type cast
   operator std::string() const {
     std::string str = "";
     for (auto i : this->state_iterator()){
@@ -227,15 +227,15 @@ class Message {
     }
     return str;
   }
-  operator aes_types::ilist() const {
-    aes_types::ilist list = {};
+  operator Bytearray() const {
+    Bytearray list = {};
     for (State i : this->states){
-      list.insert(list.end(), static_cast<aes_types::ilist>(i).begin(), static_cast<aes_types::ilist>(i).end());
+      list.extend(static_cast<Bytearray>(i));
     }
     return list;
   }
 
-  // conversioni di formato
+  // format conversion
   std::string hex() const {
     std::string str = "";
     
@@ -255,13 +255,12 @@ class Message {
     return str;
   }
 
-  // costruttori alternativi
   static Message from_hex(const std::string& str){
     aes_types::ilist array = aes_functions::basic_from_hex(str);
-    return Message::divide_ilist(array);
+    return Message::divide_bytearray(array);
   }
   static Message from_oct(const std::string& str){
     aes_types::ilist array = aes_functions::basic_from_oct(str);
-    return Message::divide_ilist(array);
+    return Message::divide_bytearray(array);
   }
 };
