@@ -85,10 +85,8 @@ namespace aes_types
   
   // state types
   using state_arr = std::array<uint8_t, aes_constants::state_chars>;
-  using state_row = std::array<uint8_t, aes_constants::state_columns>;
-  using state_column = std::array<uint8_t, aes_constants::state_rows>;
-  using state_matrix_row = std::array<aes_types::state_row, aes_constants::state_rows>;
-  using state_matrix_column = std::array<aes_types::state_column, aes_constants::state_columns>;
+  using state_matrix_row = std::array<Bytearray, aes_constants::state_columns>;
+  using state_matrix_column = std::array<Bytearray, aes_constants::state_rows>;
 
 
   // message types
