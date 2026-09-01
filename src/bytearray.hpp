@@ -46,14 +46,14 @@ class Bytearray{
     }
   }
 
-  int length() const {
+  size_t length() const {
     return this->bytes.size();
   }
-  int size() const {
+  size_t size() const {
     return this->bytes.size();
   }
   
-  Bytearray slice(int start, int stop, int step) const {
+  Bytearray slice(int start, int stop, size_t step) const {
     size_t real_start = this->handle_idx(start);
     size_t real_stop = this->handle_idx(stop);
 

@@ -23,6 +23,11 @@ namespace crypto_types
 
   using ilist_c_iterator = typename crypto_types::ilist::const_iterator;
   using ilist_iterator = typename crypto_types::ilist::iterator;
+
+  template <size_t len>
+  using iarr_c_iterator = typename crypto_types::iarr<len>::const_iterator;
+  template <size_t len>
+  using iarr_iterator = typename crypto_types::iarr<len>::iterator;
 } // namespace crypto_types
 
 
