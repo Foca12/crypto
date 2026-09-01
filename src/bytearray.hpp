@@ -184,7 +184,7 @@ class Bytearray{
     }
     return result;
   }
-  Bytearray operator~(){
+  Bytearray operator~() const {
     Bytearray result = *this;
     for (uint8_t& i : result){
       i = ~i;
