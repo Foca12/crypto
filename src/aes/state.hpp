@@ -43,7 +43,7 @@ class State{
   State(uint8_t x = aes_constants::state_chars){
     this->fill(x);
   }
-  State(const std::ranges::contiguous_range auto& bytes){
+  State(const Bytearray& bytes){
     if (bytes.size() > aes_constants::state_chars){
       throw std::invalid_argument("Input vector is bigger than state dimension");
     }
@@ -72,18 +72,18 @@ class State{
     }
     return result_rows;
   }
-  aes_types::state_row get_row(int row_idx) const {
+  Bytearray get_row(int row_idx) const {
     size_t idx = State::handle_row_idx(row_idx);
 
-    aes_types::state_row row = {};
+    Bytearray row;
     // foreach row
     for (size_t i = 0; i < aes_constants::state_columns; i ++){
       size_t row_start = i*aes_constants::state_rows;
-      row[i] = this->bytes[row_start+idx];
+      row.push_back(this->bytes[row_start+idx]);
     }
     return row;
   }
-  void set_row(int row_idx, const aes_types::state_row& value){
+  void set_row(int row_idx, const Bytearray& value){
     size_t idx = State::handle_row_idx(row_idx);
 
     for (size_t i = 0; i < aes_constants::state_columns; i ++){
@@ -100,19 +100,19 @@ class State{
     }
     return result_columns;
   }
-  aes_types::state_column get_column(int column_idx) const {
+  Bytearray get_column(int column_idx) const {
     size_t idx = State::handle_column_idx(column_idx);
 
-    aes_types::state_column column = {};
+    Bytearray column;
     // start of the column
     size_t column_start = idx*aes_constants::state_rows;
     
     for (size_t i = 0; i < aes_constants::state_rows; i ++){
-      column[i] = bytes[column_start+i];
+      column.push_back(bytes[column_start+i]);
     }
     return column;
   }
-  void set_column(int idx, const aes_types::state_column& value){
+  void set_column(int idx, const Bytearray& value){
     size_t column_idx = State::handle_column_idx(idx);
 
     for (size_t i = column_idx*aes_constants::state_rows; i < column_idx*aes_constants::state_rows+aes_constants::state_rows; i ++){
@@ -247,8 +247,8 @@ class State{
     State result = *this;
 
     for (size_t row_idx = 0; row_idx < aes_constants::state_rows; row_idx++){
-      aes_types::state_row row_result = result.get_row(row_idx);
-      aes_types::state_row row_copy = result.get_row(row_idx);
+      Bytearray row_result = result.get_row(row_idx);
+      Bytearray row_copy = result.get_row(row_idx);
       
       // left character becomes right character
       for (size_t char_idx = 0; char_idx < aes_constants::state_columns; char_idx ++){
@@ -268,8 +268,8 @@ class State{
     State result = *this;
 
     for (size_t row_idx = 0; row_idx < aes_constants::state_rows; row_idx++){
-      aes_types::state_row row_result = result.get_row(row_idx);
-      aes_types::state_row row_copy = result.get_row(row_idx);
+      Bytearray row_result = result.get_row(row_idx);
+      Bytearray row_copy = result.get_row(row_idx);
       
       // right character becomes left character
       for (size_t char_idx = 0; char_idx < aes_constants::state_columns; char_idx ++){
