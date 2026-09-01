@@ -33,6 +33,15 @@ class Bytearray{
     this->bytes.insert(this->end(), bytes.begin(), bytes.end());
   }
 
+  void pop_back(){
+    this->bytes.pop_back();
+  }
+
+  void erase(int pos){
+    pos = this->handle_idx(pos);
+    this->bytes.erase(this->begin() + pos);
+  }
+
   void clear(){
     this->fill(0);
   }
