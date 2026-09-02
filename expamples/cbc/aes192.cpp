@@ -69,9 +69,9 @@ int main(){
     Bytearray iv = Bytearray::from_hex(tests[i].iv);
     string cipher = tests[i].cipher;
 
-    Bytearray my_cipher = encrypt_aes(plain, key, iv);
+    Bytearray my_cipher = encrypt_aes(plain, key, iv, CBC);
     
-    aes_types::ilist my_decipher = decrypt_aes(my_cipher, key, iv);
+    aes_types::ilist my_decipher = decrypt_aes(my_cipher, key, iv, CBC);
 
     bool round_error = false;
 
