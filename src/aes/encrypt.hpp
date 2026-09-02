@@ -51,6 +51,7 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key){
 // encrypts using CBC mode
 Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& iv){
   Message message = Message::divide_bytearray(plain);
+  State real_iv (iv);
   
   // verifies padding integrity
   const State& last_state = message.state(-1);
@@ -60,10 +61,14 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& i
     }
   }
 
+  if (iv.length() != aes_constants::state_chars){
+    throw std::invalid_argument("Iv length length be equal to the state length");
+  }
+
   // foreach state calculates encrypt and calculates xor with previous iv or encrypted state
   for (size_t state_idx = 0; state_idx < message.length(); state_idx++){
     State& result = message.state(state_idx);
-    result ^= state_idx == 0? State(iv) : message.state(state_idx-1);
+    result ^= state_idx == 0? real_iv : message.state(state_idx-1);
     result = encrypt_aes(result, key);
 
     message.state(state_idx) = result;
@@ -118,17 +123,22 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, bool remove_paddi
 }
 
 // decrypts using CBC mode
-Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const State& iv, bool remove_padding=true){
+Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& iv, bool remove_padding=true){
+  State real_iv (iv);
   Message encrypted = Message::divide_bytearray(cipher);
   Message decrypted = encrypted;
   decrypted.squeeze(); // removes extra state padding
+
+  if (iv.length() != aes_constants::state_chars){
+    throw std::invalid_argument("Iv length length be equal to the state length");
+  }
 
   // foreach state in decrypted
   for (size_t state_idx = 0; state_idx < decrypted.length(); state_idx++){
     // decrypts single state and calculates xor with iv or previous encrypted state
     State& result = decrypted.state(state_idx);
     result = decrypt_aes(result, key);
-    result ^= state_idx == 0? iv : encrypted.state(state_idx-1);
+    result ^= state_idx == 0? real_iv : encrypted.state(state_idx-1);
 
     decrypted.state(state_idx) = result;
     }
