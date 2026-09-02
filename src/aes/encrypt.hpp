@@ -7,7 +7,26 @@
 #include "../bytearray.hpp"
 #include "message.hpp"
 #include "key.hpp"
+
 enum Mode {CBC, CTR};
+
+namespace aes_functions {
+  // verifies padding integrity
+  void check_padding(Bytearray& bytes, bool remove_padding){
+    uint8_t padding = bytes[-1];
+    for (size_t i = 1; i <= padding; i++){
+      // if remove_padding, at every iteration bytes.length decrements by itself
+      // else length remains the as same as the start and it has to move trough the bytearray 
+
+      if (bytes[remove_padding? -1 : -i] != padding){
+        throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
+      }
+      if (remove_padding) {
+        bytes.pop_back();
+      }
+    }
+  }
+}
 
 // encrypts a single state
 State encrypt_aes(State state, const Key& key){
@@ -30,23 +49,11 @@ State encrypt_aes(State state, const Key& key){
 }
 
 // encrypts using ECB mode
-Bytearray encrypt_aes(const Bytearray& plain, const Key& key, bool squeeze_padding = false){
+Bytearray encrypt_aes(const Bytearray& plain, const Key& key){
   Message message = Message::divide_bytearray(plain);
-
-  // verifies padding integrity
-  const State& last_state = message.state(-1);
-  for (size_t i = 1; i <= last_state[-1]; i++){
-    if (last_state[-i] != last_state[-1]){
-      throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
-    }
-  }
 
   for (State& state : message.state_iterator()){
     state = encrypt_aes(state, key);
-  }
-
-  if (squeeze_padding){
-    message.squeeze();
   }
 
   return message;
@@ -153,22 +160,13 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, bool remove_paddi
   }
 
   Bytearray result = encrypted;
-  // verifies padding integrity and removes it
-  const State& last_state = encrypted.state(-1);
-  for (size_t i = 1; i <= last_state[-1]; i++){
-    if (last_state[-i] != last_state[-1]){
-      throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
-    }
-    if (remove_padding){
-      result.pop_back();
-    }
-  }
+  aes_functions::check_padding(result, true);
 
   return result;
 }
 
 // decrypts using CBC or CTR mode
-Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& iv, const Mode& mode){
+Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& iv, const Mode& mode, bool remove_padding = true){
   Bytearray decipher;
 
   switch (mode){
@@ -191,19 +189,15 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& 
         decipher.extend(Bytearray(result));
       }
 
-
-      // verifies padding integrity
-      for (size_t i = 1; i < decipher[-i]; i++){
-        if (decipher[-i] != decipher[-1]){
-          throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
-        }
-      }
+      aes_functions::check_padding(decipher, true);
 
       break;
     }
 
     case CTR: {
       decipher = encrypt_aes(cipher, key, iv, CTR);
+
+      aes_functions::check_padding(decipher, true);
     }
   }
 

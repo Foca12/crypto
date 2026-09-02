@@ -132,6 +132,7 @@ namespace aes_functions
              {mul_0D, mul_09, mul_0E, mul_0B},\
              {mul_0B, mul_0D, mul_09, mul_0E}};
 
+  void check_padding(Bytearray& bytes, bool remove_padding);
 
   using namespace crypto_functions;
 } // namespace aes_functions
