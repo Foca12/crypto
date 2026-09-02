@@ -7,7 +7,8 @@
 #include "../bytearray.hpp"
 #include "message.hpp"
 #include "key.hpp"
-
+#include <iostream>
+enum Mode {CBC, CTR};
 
 // encrypts a single state
 State encrypt_aes(State state, const Key& key){
@@ -52,37 +53,74 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key, bool squeeze_paddi
   return message;
 }
 
-// encrypts using CBC mode
-Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& iv, bool squeeze_padding = false){
-  Message message = Message::divide_bytearray(plain);
-  State real_iv (iv);
+// encrypts using CBC or CTR mode
+Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& iv, const Mode& mode){
+  Bytearray cipher;
+
+  switch (mode){
+    case CBC: {
+      Message message = Message::divide_bytearray(plain);
+
+      // verifies iv length
+      if (iv.length() != aes_constants::state_chars){
+        throw std::invalid_argument("Iv length length be equal to the state length");
+      }
+
+      State real_iv (iv);
+
+      // foreach state calculates encrypt and calculates xor with previous iv or encrypted state
+      for (size_t state_idx = 0; state_idx < message.length(); state_idx++){
+        State& result = message.state(state_idx);
+        result ^= state_idx == 0? real_iv : message.state(state_idx-1);
+        result = encrypt_aes(result, key);
+
+        cipher.extend(Bytearray(result));
+      }
+
+      break;
+    }
+
+    case CTR:{
+      Message message = Message::divide_bytearray(plain);
+
+      // verifies iv length
+      if (iv.length() != aes_constants::ctr_nonce_length){
+        throw std::invalid_argument("Iv length length be "+std::to_string(aes_constants::ctr_nonce_length));
+      }
+
+      size_t padding = message[-1];
+      Bytearray counter(aes_constants::ctr_counter_length);
+      for (size_t state_idx = 0; state_idx < message.length(); state_idx++){
+        // creates the keystream by coping start nonce/iv, appending counter and encrypting it
+        Bytearray keystream = iv;
+        keystream.extend(counter);
+        keystream = encrypt_aes(keystream, key);
+
+        // prevents the adding of the padding
+        size_t end;
+        // if it's the last iteration stop before start of the padding
+        if (state_idx == message.length()-1){
+          end = aes_constants::state_chars - padding;
+        }
+        else {
+          end = aes_constants::state_chars;
+        }
+
+        // calculates xor between current state and ciphred keystream
+        const State& current_state = message.state(state_idx);
+        for (size_t char_idx = 0; char_idx < end; char_idx++){
+          cipher.push_back(current_state[char_idx] ^ keystream[char_idx]);
+        }
+
+        // increments counter
+        counter++;
+      }
+
+      break;
+    }
+  }
   
-  // verifies padding integrity
-  const State& last_state = message.state(-1);
-  for (size_t i = 1; i <= last_state[-1]; i++){
-    if (last_state[-i] != last_state[-1]){
-      throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
-    }
-  }
-
-  if (iv.length() != aes_constants::state_chars){
-    throw std::invalid_argument("Iv length length be equal to the state length");
-  }
-
-  // foreach state calculates encrypt and calculates xor with previous iv or encrypted state
-  for (size_t state_idx = 0; state_idx < message.length(); state_idx++){
-    State& result = message.state(state_idx);
-    result ^= state_idx == 0? real_iv : message.state(state_idx-1);
-    result = encrypt_aes(result, key);
-
-    message.state(state_idx) = result;
-    }
-
-  if (squeeze_padding){
-    message.squeeze();
-  }
-
-  return message;
+  return cipher;
 }
 
 // decrypts a single state
@@ -130,38 +168,41 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, bool remove_paddi
   return result;
 }
 
-// decrypts using CBC mode
-Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& iv, bool remove_padding=true){
-  State real_iv (iv);
-  Message encrypted = Message::divide_bytearray(cipher);
-  Message decrypted = encrypted;
-  decrypted.squeeze(); // removes extra state padding
+// decrypts using CBC or CTR mode
+Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& iv, const Mode& mode){
+  Bytearray decipher;
 
-  if (iv.length() != aes_constants::state_chars){
-    throw std::invalid_argument("Iv length length be equal to the state length");
+  switch (mode){
+    case CBC: {
+      State real_iv (iv);
+      Message encrypted = Message::divide_bytearray(cipher);
+      encrypted.squeeze(); // removes extra state padding
+
+      if (iv.length() != aes_constants::state_chars){
+        throw std::invalid_argument("Iv length length be equal to the state length");
+      }
+
+      // foreach state in encrypted
+      for (size_t state_idx = 0; state_idx < encrypted.length(); state_idx++){
+        // decrypts single state and calculates xor with iv or previous encrypted state
+        State result = encrypted.state(state_idx);
+        result = decrypt_aes(result, key);
+        result ^= state_idx == 0? real_iv : encrypted.state(state_idx-1);
+      
+        decipher.extend(Bytearray(result));
+      }
+
+      std::cout << decipher.hex() << '\n';
+
+      // verifies padding integrity and removes it
+      for (size_t i = 1; i < decipher[-i]; i++){
+        std::cout << (int)decipher[-i] << '\n';
+        if (decipher[-i] != decipher[-1]){
+          throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
+        }
+      }
+    }
   }
 
-  // foreach state in decrypted
-  for (size_t state_idx = 0; state_idx < decrypted.length(); state_idx++){
-    // decrypts single state and calculates xor with iv or previous encrypted state
-    State& result = decrypted.state(state_idx);
-    result = decrypt_aes(result, key);
-    result ^= state_idx == 0? real_iv : encrypted.state(state_idx-1);
-
-    decrypted.state(state_idx) = result;
-    }
-
-  Bytearray result = decrypted;
-  // verifies padding integrity and removes it
-  const State& last_state = decrypted.state(-1);
-  for (size_t i = 1; i <= last_state[-1]; i++){
-    if (last_state[-i] != last_state[-1]){
-      throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
-    }
-    if (remove_padding){
-      result.pop_back();
-    }
-  }
-
-  return result;
+  return decipher;
 }
