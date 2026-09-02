@@ -30,7 +30,7 @@ State encrypt_aes(State state, const Key& key){
 }
 
 // encrypts using ECB mode
-Bytearray encrypt_aes(const Bytearray& plain, const Key& key){
+Bytearray encrypt_aes(const Bytearray& plain, const Key& key, bool squeeze_padding = false){
   Message message = Message::divide_bytearray(plain);
 
   // verifies padding integrity
@@ -45,11 +45,15 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key){
     state = encrypt_aes(state, key);
   }
 
+  if (squeeze_padding){
+    message.squeeze();
+  }
+
   return message;
 }
 
 // encrypts using CBC mode
-Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& iv){
+Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& iv, bool squeeze_padding = false){
   Message message = Message::divide_bytearray(plain);
   State real_iv (iv);
   
@@ -73,6 +77,10 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& i
 
     message.state(state_idx) = result;
     }
+
+  if (squeeze_padding){
+    message.squeeze();
+  }
 
   return message;
 }
