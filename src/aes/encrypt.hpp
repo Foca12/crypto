@@ -90,19 +90,18 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& i
       Message message = Message::divide_bytearray(plain);
 
       // verifies iv length
-      if (iv.length() != aes_constants::ctr_nonce_length){
-        throw std::invalid_argument("Iv length length be "+std::to_string(aes_constants::ctr_nonce_length));
+      if (iv.length() != aes_constants::state_chars){
+        throw std::invalid_argument("Iv length length be equal to the state length");
       }
 
+      Bytearray keystream = iv;
       size_t padding = message[-1];
-      Bytearray counter(aes_constants::ctr_counter_length);
       for (size_t state_idx = 0; state_idx < message.length(); state_idx++){
         // creates the keystream by coping start nonce/iv, appending counter and encrypting it
-        Bytearray keystream = iv;
-        keystream.extend(counter);
-        keystream = encrypt_aes(keystream, key);
+        Bytearray current_keystream = iv;
+        current_keystream = encrypt_aes(keystream, key);
 
-        // prevents the adding of the padding
+        // prevents the adding of the state padding
         size_t end;
         // if it's the last iteration stop before start of the padding
         if (state_idx == message.length()-1){
@@ -115,11 +114,11 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& i
         // calculates xor between current state and ciphred keystream
         const State& current_state = message.state(state_idx);
         for (size_t char_idx = 0; char_idx < end; char_idx++){
-          cipher.push_back(current_state[char_idx] ^ keystream[char_idx]);
+          cipher.push_back(current_state[char_idx] ^ current_keystream[char_idx]);
         }
 
         // increments counter
-        counter++;
+        keystream++;
       }
 
       break;
@@ -196,8 +195,6 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& 
 
     case CTR: {
       decipher = encrypt_aes(cipher, key, iv, CTR);
-
-      aes_functions::check_padding(decipher, true);
     }
   }
 

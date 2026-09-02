@@ -1,7 +1,6 @@
 #pragma once
 
 #include "helpers.hpp" 
-#include <iostream>
 
 class Bytearray{
   crypto_types::ilist bytes = {};
