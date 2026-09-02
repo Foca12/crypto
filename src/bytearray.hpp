@@ -1,6 +1,7 @@
 #pragma once
 
 #include "helpers.hpp" 
+#include <iostream>
 
 class Bytearray{
   crypto_types::ilist bytes = {};
@@ -112,6 +113,40 @@ class Bytearray{
     return this->begin()+this->length();
   }
   
+  Bytearray& operator++(int){
+    for (size_t i = 1; i <= this->length(); i++){
+      this->operator[](-i)++;
+      // if current element didn't go in overflow (wasn't 0xff)
+      if (this->operator[](-i) > 0){
+        return *this;
+      }
+    }
+    // if all elements went in overflow (they were all 0xff)
+    this->push_back(0);
+    this->bytes[0] = 1;
+    return *this;
+  }
+  Bytearray& operator++(){
+    return this->operator++(0);
+  }
+  Bytearray& operator--(int){
+    Bytearray sub = *this;
+    for (size_t i = 1; i <= sub.length(); i++){
+      sub[-i]--;
+
+      // if last element was greather than 0 (uses static cast for calculate uint8 overflow)
+      // if bytarray elements are all greather than 0 assignes the subtracted bytearray (prevents underflow)
+      if (static_cast<uint8_t>(sub[-i] + 1) > 0){
+        *this = sub;
+        break;
+      }
+    }
+    return *this;
+  }
+  Bytearray& operator--(){
+    return this->operator--(0);
+  }
+
   Bytearray& operator=(const Bytearray& x){
     this->bytes = x.bytes;
     return *this;
