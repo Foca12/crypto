@@ -8,15 +8,15 @@ An educational header-only library written in C++ that implements different encr
 
 ## Description
 
-This library is still in development. Currently, it provides an implementation of the encryption algorithm AES 128, 192 and 256 in ECB and CBC modes
+This library is still in development. Currently, it provides an implementation of the encryption algorithm AES 128, 192 and 256 in ECB, CBC and CTR modes
 
 ## Features
 
 ### AES
 
-- **AES-128**: ECB and CBC support for 128-bit encryption
-- **AES-192**: ECB and CBC support for 192-bit encryption
-- **AES-256**: ECB and CBC support for 256-bit encryption
+- **AES-128**: ECB, CBC and CTR support for 128-bit encryption
+- **AES-192**: ECB, CBC and CTR support for 192-bit encryption
+- **AES-256**: ECB, CBC and CTR support for 256-bit encryption
 - **Cryptographic Operations**:
   - SubBytes (byte substitution)
   - ShiftRows (row rotation)

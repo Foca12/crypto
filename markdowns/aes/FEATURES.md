@@ -1,12 +1,12 @@
 # Description
 
-This is an implementation of the AES algorithm, written for educational purposes. This implementation provides AES-128, AES-192 and AES-256 support in ECB and CBC modes.
+This is an implementation of the AES algorithm, written for educational purposes. This implementation provides AES-128, AES-192 and AES-256 support in ECB, CBC and CTR modes.
 
 ## Features
 
-- **AES-128**: ECB and CBC support for 128-bit encryption
-- **AES-192**: ECB and CBC support for 192-bit encryption
-- **AES-256**: ECB and CBC support for 256-bit encryption
+- **AES-128**: ECB, CBC and CTR support for 128-bit encryption
+- **AES-192**: ECB, CBC and CTR support for 192-bit encryption
+- **AES-256**: ECB, CBC and CTR support for 256-bit encryption
 - **Cryptographic Operations**:
   - SubBytes (byte substitution)
   - ShiftRows (row rotation)
@@ -54,18 +54,18 @@ crypto/
 
 # 🔧 Available Functions
 
-## Multi-Size AES Encryption in ECB and CBC modes
+## Multi-Size AES Encryption in ECB, CBC and CTR modes
 
 ```cpp
 Bytearray encrypt_aes(Bytearray message, const Key& key)
-Bytearray encrypt_aes(Bytearray message, const Key& key, const State& iv)
+Bytearray encrypt_aes(Bytearray message, const Key& key, const State& iv, const Mode& mode)
 ```
 
-## Multi-Size AES Decryption in ECB and CBC modes
+## Multi-Size AES Decryption in ECB, CBC and CTR modes
 
 ```cpp
 Bytearray decrypt_aes(Bytearray encrypted, const Key& key)
-Bytearray decrypt_aes(Bytearray encrypted, const Key& key, const State& iv, bool remove_padding = true)
+Bytearray decrypt_aes(Bytearray encrypted, const Key& key, const State& iv, const Mode& mode, bool remove_padding = true)
 ```
 
 # How AES Works
@@ -85,6 +85,8 @@ For more information: [NIST AES Specification](https://nvlpubs.nist.gov/nistpubs
 - **ECB (Electronic CodeBook)**: Simple modes where each block is encrypted independently. ⚠️ Less secure for repeated patterns.
 
 - **CBC (Cipher Block Chaining)**: Each block is XORed with the previous ciphertext block before encryption, providing better security properties.
+
+- **CTR (Counter)**: Turns the block cipher into a stream cipher. It encrypts a continuously incrementing counter and XORs the result with the plaintext. It does not require padding.
 
 # Educational Note
 
