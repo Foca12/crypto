@@ -26,6 +26,11 @@ void erase(int pos) // Removes the element at the specified index (supports nega
 void clear() // Sets all bytes to 0 and clears the content
 void fill(uint8_t x = 0) // Fills the entire container with the value 'x'
 
+Bytearray& operator++(int) // Increments the Bytearray considering the list as one number (prevents overflow by adding another digit)
+Bytearray& operator++()    // Same as before
+Bytearray& operator--(int) // Decrements the Bytearray considering the list as one number (prevents overflow by not decrementing Bytearray)
+Bytearray& operator--()    // Same as before
+
 Bytearray& operator=(const Bytearray& x) // Copy assignment operator
 ```
 
