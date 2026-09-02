@@ -7,7 +7,6 @@
 #include "../bytearray.hpp"
 #include "message.hpp"
 #include "key.hpp"
-#include <iostream>
 enum Mode {CBC, CTR};
 
 // encrypts a single state
@@ -80,7 +79,7 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& i
       break;
     }
 
-    case CTR:{
+    case CTR: {
       Message message = Message::divide_bytearray(plain);
 
       // verifies iv length
@@ -192,15 +191,19 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& 
         decipher.extend(Bytearray(result));
       }
 
-      std::cout << decipher.hex() << '\n';
 
-      // verifies padding integrity and removes it
+      // verifies padding integrity
       for (size_t i = 1; i < decipher[-i]; i++){
-        std::cout << (int)decipher[-i] << '\n';
         if (decipher[-i] != decipher[-1]){
           throw std::runtime_error("Message last state doesn't match PKCS#7 padding");
         }
       }
+
+      break;
+    }
+
+    case CTR: {
+      decipher = encrypt_aes(cipher, key, iv, CTR);
     }
   }
 
