@@ -28,22 +28,27 @@ class Bytearray{
   void push_back(uint8_t n){
     this->bytes.push_back(n);
   }
-  
   void extend(const std::ranges::contiguous_range auto& bytes){
     this->bytes.insert(this->end(), bytes.begin(), bytes.end());
+  }
+  void insert(int pos, uint8_t x){
+    this->bytes.insert(this->begin() + this->handle_idx(pos), x);
   }
 
   void pop_back(){
     this->bytes.pop_back();
   }
-
   void erase(int pos){
     pos = this->handle_idx(pos);
     this->bytes.erase(this->begin() + pos);
   }
+  void resize(size_t size){
+    this->bytes.resize(size);
+  }
 
   void clear(){
     this->fill(0);
+    this->bytes.clear();
   }
 
   void fill(uint8_t x = 0){
