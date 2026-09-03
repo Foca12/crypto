@@ -65,8 +65,8 @@ int main(){
   int failed = 0;
 
   for (int i = 0; i < n_tests; i++){
-    Key key = Key::from_hex(tests[i].key);
-    key.expand();
+    Bytearray key = Bytearray::from_hex(tests[i].key);
+
 
     Bytearray plain = Bytearray::from_hex(tests[i].plain);
     string cipher = tests[i].cipher;

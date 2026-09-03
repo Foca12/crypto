@@ -74,18 +74,18 @@ class Bytearray{
     if (real_start > this->length()){
       throw std::invalid_argument("Start index is bigger or equal than bytearray length");
     }
-    if (real_stop-1 > this->length()){
+    if (real_stop > 0 && real_stop-1 > this->length()){
       throw std::invalid_argument("Stop index is bigger than bytearray length");
     }
-    if (stop < start){
-      throw std::invalid_argument("Stop index is lower or equal than start index");
+    if (real_stop < real_start){
+      throw std::invalid_argument("Stop index is lower than start index");
     }
     if (step < 1){
       throw std::invalid_argument("Invalid step value");
     }
 
     Bytearray result;
-    for (size_t i = start; i < stop; i += step){
+    for (size_t i = real_start; i < real_stop; i += step){
       result.push_back(this->bytes[i]);
     }
     return result;
@@ -111,10 +111,10 @@ class Bytearray{
     return this->bytes.begin();
   }
   bytearray_types::ilist_iterator end() {
-    return this->begin()+this->length();
+    return this->bytes.end();
   }
   bytearray_types::ilist_c_iterator end() const {
-    return this->begin()+this->length();
+    return this->bytes.end();
   }
   
   Bytearray& operator++(int){
@@ -166,7 +166,7 @@ class Bytearray{
     }
     
     // right element becomes left one
-    for (size_t i = 0; i < copy.length(); i++){
+    for (int i = 0; i < copy.length(); i++){
       copy[i] = this->operator[](i-rounds);
     }
     return copy;
@@ -180,7 +180,7 @@ class Bytearray{
     }
     
     // left element becomes right one
-    for (size_t i = 0; i < copy.length(); i++){
+    for (int i = 0; i < copy.length(); i++){
       copy.operator[](i-rounds) = this->bytes[i];
     }
     return copy;
