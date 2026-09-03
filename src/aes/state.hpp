@@ -1,8 +1,9 @@
 #pragma once
 
 #include "aes_helpers.hpp"
-#include "../bytearray.hpp"
 
+namespace crypto::aes
+{
 class State{
   aes_types::state_arr bytes = {};
 
@@ -312,3 +313,4 @@ class State{
     return State(aes_functions::basic_from_hex(str));
   }
 };
+}

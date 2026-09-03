@@ -4,7 +4,7 @@
 #include "../message.hpp"
 #include "../state.hpp"
 
-namespace crypt_operations
+namespace crypto::aes::crypt_operations
 {
   State shift_rows(State input){
     for (size_t row_idx = 0; row_idx < aes_constants::state_rows; row_idx++){

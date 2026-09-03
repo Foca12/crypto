@@ -18,10 +18,12 @@ static Bytearray from_oct(const std::string& str) // Creates a Bytearray from an
 
 ```cpp
 void push_back(uint8_t n) // Extends the Bytearray by appending a single byte
+void insert(int pos, uint8_t x) // Insert the x byte at pos position in the Bytearray
 void extend(const std::ranges::contiguous_range auto& bytes) // Merges the Bytearray with another collection
 
 void pop_back() // Removes the last element
 void erase(int pos) // Removes the element at the specified index (supports negative indexing)
+void resize(size_t size) // Resizes the Bytearray by inserting or removing bytes until it reaches size length
 
 void clear() // Sets all bytes to 0 and clears the content
 void fill(uint8_t x = 0) // Fills the entire container with the value 'x'

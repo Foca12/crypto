@@ -55,17 +55,16 @@ int main(){
   int passed = 0;
   int failed = 0;
 
-  Bytearray iv = Bytearray::from_hex(test_iv);
+  crypto::Bytearray iv = crypto::Bytearray::from_hex(test_iv);
   for (int i = 0; i < n_tests; i++){
-    Key key = Key::from_hex(tests[i].key);
-    key.expand();
+    crypto::Bytearray key = crypto::Bytearray::from_hex(tests[i].key);
 
-    Bytearray plain = Bytearray::from_hex(tests[i].plain);
+    crypto::Bytearray plain = crypto::Bytearray::from_hex(tests[i].plain);
     string cipher = tests[i].cipher;
 
-    Bytearray my_cipher = encrypt_aes(plain, key, iv, CTR);
+    crypto::Bytearray my_cipher = crypto::aes::encrypt_aes(plain, key, iv, crypto::aes::CTR);
     
-    aes_types::ilist my_decipher = decrypt_aes(my_cipher, key, iv, CTR);
+    crypto::Bytearray my_decipher = crypto::aes::decrypt_aes(my_cipher, key, iv, crypto::aes::CTR);
 
     bool round_error = false;
 
@@ -74,8 +73,8 @@ int main(){
       round_error = true;
     }
     
-    if (aes_functions::basic_hex(my_decipher) != tests[i].plain){
-      cout << "Decrypt error in test number [" << i << "] -> Expected: " << tests[i].plain << " | Calculated: " << aes_functions::basic_hex(my_decipher) << endl;
+    if (my_decipher.hex() != tests[i].plain){
+      cout << "Decrypt error in test number [" << i << "] -> Expected: " << tests[i].plain << " | Calculated: " << my_decipher.hex() << endl;
       round_error = true;
     }
 

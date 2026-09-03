@@ -35,7 +35,7 @@ crypto/
 ├── src/
 │   └── aes/                     # Implementation of AES and core functions
 │       ├── encrypt.hpp          # Main encryption functions
-│       ├── helpers.hpp          # Helper functions, type definitions and constants
+│       ├── aes_helpers.hpp          # Helper functions, type definitions and constants
 │       ├── message.hpp          # Message split into 16 byte blocks
 │       ├── key.hpp              # Key management and expansion
 │       ├── state.hpp            # State matrix implementation

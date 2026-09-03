@@ -4,10 +4,13 @@
 #include "crypt/mix_columns.hpp"
 #include "crypt/shift_rows.hpp"
 #include "crypt/sub_bytes.hpp"
-#include "../bytearray.hpp"
 #include "message.hpp"
 #include "key.hpp"
+#include "aes_helpers.hpp"
 
+
+namespace crypto::aes
+{
 enum Mode {CBC, CTR};
 
 namespace aes_functions {
@@ -57,6 +60,11 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key){
   }
 
   return message;
+}
+Bytearray encrypt_aes(const Bytearray& plain, const Bytearray& key){
+  Key k (key);
+  k.expand();
+  return encrypt_aes(plain, k);
 }
 
 // encrypts using CBC or CTR mode
@@ -127,6 +135,11 @@ Bytearray encrypt_aes(const Bytearray& plain, const Key& key, const Bytearray& i
   
   return cipher;
 }
+Bytearray encrypt_aes(const Bytearray& plain, const Bytearray& key, const Bytearray& iv, const Mode& mode){
+  Key k (key);
+  k.expand();
+  return encrypt_aes(plain, k, iv, mode);
+}
 
 // decrypts a single state
 State decrypt_aes(State state, const Key& key){
@@ -163,6 +176,12 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, bool remove_paddi
 
   return result;
 }
+Bytearray decrypt_aes(const Bytearray& cipher, const Bytearray& key){
+  Key k (key);
+  k.expand();
+  return decrypt_aes(cipher, k);
+}
+
 
 // decrypts using CBC or CTR mode
 Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& iv, const Mode& mode, bool remove_padding = true){
@@ -199,4 +218,10 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Key& key, const Bytearray& 
   }
 
   return decipher;
+}
+Bytearray decrypt_aes(const Bytearray& cipher, const Bytearray& key, const Bytearray& iv, const Mode& mode){
+  Key k (key);
+  k.expand();
+  return decrypt_aes(cipher, k, iv, mode);
+}
 }

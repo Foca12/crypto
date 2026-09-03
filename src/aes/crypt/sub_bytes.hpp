@@ -1,10 +1,9 @@
 #pragma once
 
 #include "../message.hpp"
-#include "../../bytearray.hpp"
 #include "../aes_helpers.hpp"
 
-namespace crypt_operations
+namespace crypto::aes::crypt_operations
 {
   Bytearray sub_bytes(Bytearray input){
     for (size_t i = 0; i < input.length(); i++){

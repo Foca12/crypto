@@ -1,9 +1,11 @@
 #pragma once
 
-#include "helpers.hpp" 
+#include "bytearray_helpers.hpp" 
 
+namespace crypto
+{
 class Bytearray{
-  crypto_types::ilist bytes = {};
+  bytearray_types::ilist bytes = {};
 
   // helper function which calculates negative index
   size_t handle_idx(int idx) const {
@@ -28,22 +30,27 @@ class Bytearray{
   void push_back(uint8_t n){
     this->bytes.push_back(n);
   }
-  
   void extend(const std::ranges::contiguous_range auto& bytes){
     this->bytes.insert(this->end(), bytes.begin(), bytes.end());
+  }
+  void insert(int pos, uint8_t x){
+    this->bytes.insert(this->begin() + this->handle_idx(pos), x);
   }
 
   void pop_back(){
     this->bytes.pop_back();
   }
-
   void erase(int pos){
     pos = this->handle_idx(pos);
     this->bytes.erase(this->begin() + pos);
   }
+  void resize(size_t size){
+    this->bytes.resize(size);
+  }
 
   void clear(){
     this->fill(0);
+    this->bytes.clear();
   }
 
   void fill(uint8_t x = 0){
@@ -69,18 +76,18 @@ class Bytearray{
     if (real_start > this->length()){
       throw std::invalid_argument("Start index is bigger or equal than bytearray length");
     }
-    if (real_stop-1 > this->length()){
+    if (real_stop > 0 && real_stop-1 > this->length()){
       throw std::invalid_argument("Stop index is bigger than bytearray length");
     }
-    if (stop < start){
-      throw std::invalid_argument("Stop index is lower or equal than start index");
+    if (real_stop < real_start){
+      throw std::invalid_argument("Stop index is lower than start index");
     }
     if (step < 1){
       throw std::invalid_argument("Invalid step value");
     }
 
     Bytearray result;
-    for (size_t i = start; i < stop; i += step){
+    for (size_t i = real_start; i < real_stop; i += step){
       result.push_back(this->bytes[i]);
     }
     return result;
@@ -99,17 +106,17 @@ class Bytearray{
     return this->bytes[this->handle_idx(idx)];
   }
   
-  crypto_types::ilist_c_iterator begin() const {
+  bytearray_types::ilist_c_iterator begin() const {
     return this->bytes.begin();
   }
-  crypto_types::ilist_iterator begin() {
+  bytearray_types::ilist_iterator begin() {
     return this->bytes.begin();
   }
-  crypto_types::ilist_iterator end() {
-    return this->begin()+this->length();
+  bytearray_types::ilist_iterator end() {
+    return this->bytes.end();
   }
-  crypto_types::ilist_c_iterator end() const {
-    return this->begin()+this->length();
+  bytearray_types::ilist_c_iterator end() const {
+    return this->bytes.end();
   }
   
   Bytearray& operator++(int){
@@ -161,7 +168,7 @@ class Bytearray{
     }
     
     // right element becomes left one
-    for (size_t i = 0; i < copy.length(); i++){
+    for (int i = 0; i < copy.length(); i++){
       copy[i] = this->operator[](i-rounds);
     }
     return copy;
@@ -175,7 +182,7 @@ class Bytearray{
     }
     
     // left element becomes right one
-    for (size_t i = 0; i < copy.length(); i++){
+    for (int i = 0; i < copy.length(); i++){
       copy.operator[](i-rounds) = this->bytes[i];
     }
     return copy;
@@ -266,25 +273,26 @@ class Bytearray{
 
   // conversioni di tipo
   operator std::string() const {
-    return crypto_functions::convert_to_string(this->bytes);
+    return bytearray_functions::convert_to_string(this->bytes);
   }
-  operator crypto_types::ilist() const {
+  operator bytearray_types::ilist() const {
     return this->bytes;
   }
 
   // conversioni di formato
   std::string hex() const {
-    return crypto_functions::basic_hex(this->bytes);
+    return bytearray_functions::basic_hex(this->bytes);
   }
   std::string oct() const {
-    return crypto_functions::basic_oct(this->bytes);
+    return bytearray_functions::basic_oct(this->bytes);
   }
 
   // costruttori alternativi
   static Bytearray from_hex (const std::string& str){
-    return Bytearray(crypto_functions::basic_from_hex(str));
+    return Bytearray(bytearray_functions::basic_from_hex(str));
   }
   static Bytearray from_oct (const std::string& str){
-    return Bytearray(crypto_functions::basic_from_oct(str));
+    return Bytearray(bytearray_functions::basic_from_oct(str));
   }
 }; 
+}

@@ -3,9 +3,8 @@
 #include "../aes_helpers.hpp"
 #include "../state.hpp"
 #include "../message.hpp"
-#include "../../bytearray.hpp"
 
-namespace crypt_operations
+namespace crypto::aes::crypt_operations
 { 
   Bytearray basic_mix_columns(
       Bytearray column, 
