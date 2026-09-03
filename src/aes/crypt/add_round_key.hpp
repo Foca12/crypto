@@ -3,7 +3,6 @@
 #include "../aes_helpers.hpp"
 #include "../state.hpp"
 #include "../message.hpp"
-#include "../../bytearray.hpp"
 #include "../key.hpp"
 
 namespace crypt_operations

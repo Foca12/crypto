@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aes_helpers.hpp"
-#include "../bytearray.hpp"
 #include "state.hpp"
 
 class Message {

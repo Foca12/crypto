@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../message.hpp"
-#include "../../bytearray.hpp"
 #include "../aes_helpers.hpp"
 
 namespace crypt_operations

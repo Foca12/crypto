@@ -1,4 +1,3 @@
 #pragma once
 
-#include "../src/bytearray.hpp"
-#include "../src/helpers.hpp"
+#include "../src/bytearray/bytearray.hpp"

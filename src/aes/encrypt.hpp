@@ -4,9 +4,9 @@
 #include "crypt/mix_columns.hpp"
 #include "crypt/shift_rows.hpp"
 #include "crypt/sub_bytes.hpp"
-#include "../bytearray.hpp"
 #include "message.hpp"
 #include "key.hpp"
+#include "aes_helpers.hpp"
 
 enum Mode {CBC, CTR};
 

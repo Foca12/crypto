@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aes_helpers.hpp"
-#include "../bytearray.hpp"
 
 class State{
   aes_types::state_arr bytes = {};
