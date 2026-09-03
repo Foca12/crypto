@@ -8,6 +8,9 @@
 #include "key.hpp"
 #include "aes_helpers.hpp"
 
+
+namespace crypto::aes
+{
 enum Mode {CBC, CTR};
 
 namespace aes_functions {
@@ -220,4 +223,5 @@ Bytearray decrypt_aes(const Bytearray& cipher, const Bytearray& key, const Bytea
   Key k (key);
   k.expand();
   return decrypt_aes(cipher, k, iv, mode);
+}
 }

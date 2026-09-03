@@ -3,6 +3,8 @@
 #include "aes_helpers.hpp"
 #include "crypt/sub_bytes.hpp"
 
+namespace crypto::aes
+{
 class Key {
   private:
   static Bytearray g(Bytearray x, size_t round) {
@@ -171,3 +173,4 @@ class Key {
     return arr.oct();
   }
 };
+}

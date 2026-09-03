@@ -3,6 +3,8 @@
 #include "aes_helpers.hpp"
 #include "state.hpp"
 
+namespace crypto::aes
+{
 class Message {
   aes_types::message_vct states;
 
@@ -269,3 +271,4 @@ class Message {
     return Message::divide_bytearray(array);
   }
 };
+}

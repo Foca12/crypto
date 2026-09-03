@@ -4,7 +4,7 @@
 #include "../state.hpp"
 #include "../message.hpp"
 
-namespace crypt_operations
+namespace crypto::aes::crypt_operations
 { 
   Bytearray basic_mix_columns(
       Bytearray column, 

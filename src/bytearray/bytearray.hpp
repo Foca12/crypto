@@ -2,6 +2,8 @@
 
 #include "bytearray_helpers.hpp" 
 
+namespace crypto
+{
 class Bytearray{
   bytearray_types::ilist bytes = {};
 
@@ -293,3 +295,4 @@ class Bytearray{
     return Bytearray(bytearray_functions::basic_from_oct(str));
   }
 }; 
+}

@@ -14,6 +14,8 @@
 #include "../bytearray/bytearray.hpp"
 
 
+namespace crypto::aes
+{
 namespace aes_constants
 {
   constexpr size_t state_rows = 4;
@@ -226,3 +228,4 @@ namespace aes_functions
              {mul_0D, mul_09, mul_0E, mul_0B},\
              {mul_0B, mul_0D, mul_09, mul_0E}};
 } // namespace aes_functions
+} // namespace crypto::aes

@@ -5,7 +5,7 @@
 #include "../message.hpp"
 #include "../key.hpp"
 
-namespace crypt_operations
+namespace crypto::aes::crypt_operations
 {
   State add_round_key(State state, const Key& key, size_t round){
     auto specs = key.get_specs();

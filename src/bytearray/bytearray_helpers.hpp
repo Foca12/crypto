@@ -13,6 +13,7 @@
 #include <array>
 #include <ranges>
 
+namespace crypto{
 class State;
 namespace bytearray_types
 {
@@ -116,3 +117,4 @@ namespace bytearray_functions
     return bytearray_functions::basic_oct(vct);
   }
 } // namespace bytearray_functions
+}
