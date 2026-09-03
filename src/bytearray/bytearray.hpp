@@ -1,9 +1,9 @@
 #pragma once
 
-#include "helpers.hpp" 
+#include "bytearray_helpers.hpp" 
 
 class Bytearray{
-  crypto_types::ilist bytes = {};
+  bytearray_types::ilist bytes = {};
 
   // helper function which calculates negative index
   size_t handle_idx(int idx) const {
@@ -104,16 +104,16 @@ class Bytearray{
     return this->bytes[this->handle_idx(idx)];
   }
   
-  crypto_types::ilist_c_iterator begin() const {
+  bytearray_types::ilist_c_iterator begin() const {
     return this->bytes.begin();
   }
-  crypto_types::ilist_iterator begin() {
+  bytearray_types::ilist_iterator begin() {
     return this->bytes.begin();
   }
-  crypto_types::ilist_iterator end() {
+  bytearray_types::ilist_iterator end() {
     return this->begin()+this->length();
   }
-  crypto_types::ilist_c_iterator end() const {
+  bytearray_types::ilist_c_iterator end() const {
     return this->begin()+this->length();
   }
   
@@ -271,25 +271,25 @@ class Bytearray{
 
   // conversioni di tipo
   operator std::string() const {
-    return crypto_functions::convert_to_string(this->bytes);
+    return bytearray_functions::convert_to_string(this->bytes);
   }
-  operator crypto_types::ilist() const {
+  operator bytearray_types::ilist() const {
     return this->bytes;
   }
 
   // conversioni di formato
   std::string hex() const {
-    return crypto_functions::basic_hex(this->bytes);
+    return bytearray_functions::basic_hex(this->bytes);
   }
   std::string oct() const {
-    return crypto_functions::basic_oct(this->bytes);
+    return bytearray_functions::basic_oct(this->bytes);
   }
 
   // costruttori alternativi
   static Bytearray from_hex (const std::string& str){
-    return Bytearray(crypto_functions::basic_from_hex(str));
+    return Bytearray(bytearray_functions::basic_from_hex(str));
   }
   static Bytearray from_oct (const std::string& str){
-    return Bytearray(crypto_functions::basic_from_oct(str));
+    return Bytearray(bytearray_functions::basic_from_oct(str));
   }
 }; 
