@@ -13,13 +13,17 @@
 #include <cstring>
 #include <array>
 
-namespace crypto
+namespace crypto::sha
 {
+  class Sha256_chunk;
+
   namespace sha_constants
   {
     constexpr size_t sha256_n_rounds = 64;
 
     constexpr size_t sha256_chunk_words = 16;
+
+    constexpr size_t sha256_padding_length_size = 2;
 
     constexpr std::array<uint32_t, 8> sha256_start_ashes = {
           0x6a09e667,
@@ -48,6 +52,7 @@ namespace crypto
     
 
     using sha256_word_list = iarr<sha_constants::sha256_n_rounds>;
+    using sha256_chunk_list = std::vector<Sha256_chunk>;
   } // namespace sha_types
   
   namespace sha_functions
