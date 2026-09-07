@@ -6,9 +6,7 @@ DO NOT use this code in production or to protect sensitive data.
 
 ## What this means
 
-- This library is educational: it is designed to help understand the internal mechanisms of AES and encryption modes.
-- Do not expose keys, IVs/nonces, or plaintext in logs.
-- Default choices (encryption modes, padding, nonce management) may not be suitable for all security scenarios.
+- This library is educational: it is designed to help understand the internal mechanisms of multiple encryption algorithm and the fundamentals of modern security.
 
 ## Specific algorithms
 

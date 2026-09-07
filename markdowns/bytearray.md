@@ -50,13 +50,16 @@ const uint8_t& operator[](int idx) const // Read-only access (supports negative 
 uint8_t& operator[](int idx)             // Read-write access (supports negative indexing)
 ```
 
-## 🔄 Iterators
+## 🔄 Iterators & Pointers
 
 ```cpp
 crypto_types::ilist_c_iterator begin() const // Constant iterator to the beginning
 crypto_types::ilist_iterator begin()         // Iterator to the beginning
 crypto_types::ilist_c_iterator end() const   // Constant iterator to the end
 crypto_types::ilist_iterator end()           // Iterator to the end
+
+const uint8_t* data() const // Returns constant pointer to first element
+uint8_t* data()            // Returns pointer to first element
 ```
 
 ## 🔀 Bitwise & Shift Operations
