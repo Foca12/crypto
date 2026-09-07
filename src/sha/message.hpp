@@ -94,7 +94,7 @@ namespace crypto::sha
       }
     }
 
-    sha_types::sha256_hash_array hash() {
+    Bytearray hash() {
       sha_types::sha256_hash_array hashes = sha_constants::sha256_start_hashes;
       
       for (Sha256_chunk& chunk : this->chunks){
@@ -115,7 +115,15 @@ namespace crypto::sha
         }
       }
 
-      return hashes;
+      Bytearray digested (0);
+      for (uint32_t hash : hashes){
+        digested.push_back(hash >> 24);
+        digested.push_back(hash >> 16 & 0xff);
+        digested.push_back(hash >> 8 & 0xff);
+        digested.push_back(hash & 0xff);
+      }
+
+      return digested;
     }
 
     Sha256_chunk& chunk(size_t index) {
