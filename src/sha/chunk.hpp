@@ -89,17 +89,9 @@ namespace crypto::sha
     }
     
     void clear() {
-      if (this->expanded){
-        volatile uint32_t* ptr = words.data();
-        for (size_t i = 0; i < sha_constants::sha256_chunk_words; i++){
-          ptr[i] = 0;
-        }
-      }
-      else {
-        volatile uint32_t* ptr = words.data();
-        for (size_t i = 0; i < sha_constants::sha256_n_rounds; i++){
-          ptr[i] = 0;
-        }
+      volatile uint32_t* ptr = words.data();
+      for (size_t i = 0; i < sha_constants::sha256_n_rounds; i++){
+        ptr[i] = 0;
       }
       this->expanded = false;
     }
