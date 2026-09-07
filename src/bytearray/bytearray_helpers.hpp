@@ -60,6 +60,14 @@ namespace bytearray_functions
     return convert_to_string(vct);
   }
 
+  bytearray_types::ilist basic_from_string(const std::string& str){
+    bytearray_types::ilist result;
+    for (const uint8_t& i : str){
+      result.push_back(i);
+    }
+    return result;
+  }
+
   // convert hex/oct string in vector of uint
   bytearray_types::ilist basic_from_hex(const std::string& str){  
     if (str.length() % 2 != 0){
