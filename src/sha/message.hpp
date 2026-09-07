@@ -94,6 +94,30 @@ namespace crypto::sha
       }
     }
 
+    sha_types::sha256_hash_array hash() {
+      sha_types::sha256_hash_array hashes = sha_constants::sha256_start_hashes;
+      
+      for (Sha256_chunk& chunk : this->chunks){
+        sha_types::sha256_hash_array last_hashes = hashes;
+        chunk.expand();
+
+        uint32_t t1, t2;
+        for (size_t round = 0; round < sha_constants::sha256_n_rounds; round++){
+          t1 = sha_functions::calc_t1(round, hashes, chunk);
+          t2 = sha_functions::calc_t2(round, hashes);
+          
+          sha_functions::cicle_hashes(hashes, t1, t2);
+        }
+
+        // feed-forward
+        for (size_t hash_idx = 0; hash_idx < sha_constants::n_hashes; hash_idx++){
+          hashes[hash_idx] += last_hashes[hash_idx];
+        }
+      }
+
+      return hashes;
+    }
+
     Sha256_chunk& chunk(size_t index) {
       return this->chunks[this->handle_chunk_idx(index)];
     }
