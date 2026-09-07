@@ -20,8 +20,8 @@ class Bytearray{
     this->clear();
   }
   
-  Bytearray(uint8_t x=0){
-    this->bytes.insert(this->bytes.end(), x, 0);
+  Bytearray(size_t n = 0, uint8_t x = 0){
+    this->bytes.insert(this->bytes.end(), n, n);
   }
   Bytearray(const std::ranges::contiguous_range auto& bytes){
     this->bytes.assign(bytes.begin(), bytes.end());
@@ -32,6 +32,9 @@ class Bytearray{
   }
   void extend(const std::ranges::contiguous_range auto& bytes){
     this->bytes.insert(this->end(), bytes.begin(), bytes.end());
+  }
+  void operator+=(const Bytearray& bytes){
+    this->extend(bytes);
   }
   void insert(int pos, uint8_t x){
     this->bytes.insert(this->begin() + this->handle_idx(pos), x);
@@ -196,6 +199,8 @@ class Bytearray{
   }
   
   // logic operator
+  bool operator==(const Bytearray& arr) const = default;
+
   Bytearray operator|(const Bytearray& arr) const {
     Bytearray result = *this;
 
@@ -295,6 +300,9 @@ class Bytearray{
   }
 
   // costruttori alternativi
+  static Bytearray from_string (const std::string& str){
+    return Bytearray(bytearray_functions::basic_from_string(str));
+  }
   static Bytearray from_hex (const std::string& str){
     return Bytearray(bytearray_functions::basic_from_hex(str));
   }
