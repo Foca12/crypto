@@ -68,13 +68,13 @@ namespace crypto::sha
       return this->words.begin();
     }
     sha_types::sha256_word_list::iterator end() {
-      return this->expanded? this->words.begin() + sha_constants::sha256_chunk_words : this->words.end();
+      return this->expanded? this->words.end() : this->words.begin() + sha_constants::sha256_chunk_words;
     }
     sha_types::sha256_word_list::const_iterator begin() const {
       return this->words.begin();
     }
     sha_types::sha256_word_list::const_iterator end() const {
-      return this->expanded? this->words.begin() + sha_constants::sha256_chunk_words : this->words.end();
+      return this->expanded? this->words.end() : this->words.begin() + sha_constants::sha256_chunk_words;
     }
   
     uint32_t& operator[](int idx){
