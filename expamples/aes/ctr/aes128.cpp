@@ -1,6 +1,6 @@
 #include <iostream>
-#include "../../include/aes.hpp"
-#include "../../include/bytearray.hpp"
+#include "../../../include/aes.hpp"
+#include "../../../include/bytearray.hpp"
 
 using namespace std;
 
@@ -12,57 +12,59 @@ typedef struct {
 
 constexpr size_t n_tests = 7;
 
-const test tests[n_tests] = { 
-  // --- Group 1: NIST Vectors ---
-  {"603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4",
+const string test_iv = "f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff";
+
+const test tests[n_tests] = {
+  // --- NIST Vectors ---
+  {"2b7e151628aed2a6abf7158809cf4f3c",
    "6bc1bee22e409f96e93d7e117393172a",
-   "f3eed1bdb5d2a03c064b5a7e3db181f84c45dfb3b3b484ec35b0512dc8c1c4d6"},
+   "874d6191b620e3261bef6864990db6ce",},
 
-  {"603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4",
+  {"2b7e151628aed2a6abf7158809cf4f3c",
    "ae2d8a571e03ac9c9eb76fac45af8e51",
-   "591ccb10d410ed26dc5ba74a313628704c45dfb3b3b484ec35b0512dc8c1c4d6"},
+   "9806f66b7970fdff8617187bb9fffdff",},
 
-  {"603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4",
+  {"2b7e151628aed2a6abf7158809cf4f3c",
    "30c81c46a35ce411e5fbc1191a0a52ef",
-   "b6ed21b99ca6f4f9f153e7b1beafed1d4c45dfb3b3b484ec35b0512dc8c1c4d6"},
+   "5ae4df3edbd5d35e5b4f09020db03eab",},
 
-  {"603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4",
+  {"2b7e151628aed2a6abf7158809cf4f3c",
    "f69f2445df4f9b17ad2b417be66c3710",
-   "23304b7a39f9f3ff067d8d8f9e24ecc74c45dfb3b3b484ec35b0512dc8c1c4d6"},
-  
+   "1e031dda2fbe03d1792170a0f3009cee",},
+    
   // --- Recurring Pattern --- 
-  {"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  {"000102030405060708090a0b0c0d0e0f",
    "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
-   "8ea2b7ca516745bfeafc49904b4960898ea2b7ca516745bfeafc49904b4960899f3b7504926f8bd36e3118e903a4cd4a"},
+   "6b10801b69c335150c1b73a933236fc2e92503c321815f2920148fc58c92d67c"},
 
   // --- All-Zeros Test Vector ---
-  {"0000000000000000000000000000000000000000000000000000000000000000",
+  {"00000000000000000000000000000000",
    "00000000000000000000000000000000",
-   "dc95c078a2408989ad48a214928420871f788fe6d86c317549697fbf0c07fa43"},
+   "006a010e0f4777d7785292b285d04dce"},
 
   // --- Asimmetric Vector ---
-  {"603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4",
-  "6bc1bee22e409f96e93d7e117393172a11223344",
-  "f3eed1bdb5d2a03c064b5a7e3db181f89f834d35e5c0d87f2b623c2555f1d7d7"}
+  {"2b7e151628aed2a6abf7158809cf4f3c",
+   "6bc1bee22e409f96e93d7e117393172a11223344",
+   "5018129b679eb46f8c54d229306b65686cb8fdc4"}
 };
 
 
-
 int main(){
-  cout << "START OF THE TEST OF THE LIBRARY (AES-256 EBC)" << endl;
+  cout << "START OF THE TEST OF THE LIBRARY (AES-128 CTR)" << endl;
   
   int passed = 0;
   int failed = 0;
 
+  crypto::Bytearray iv = crypto::Bytearray::from_hex(test_iv);
   for (int i = 0; i < n_tests; i++){
     crypto::Bytearray key = crypto::Bytearray::from_hex(tests[i].key);
 
     crypto::Bytearray plain = crypto::Bytearray::from_hex(tests[i].plain);
     string cipher = tests[i].cipher;
 
-    crypto::Bytearray my_cipher = crypto::aes::encrypt_aes(plain, key);
+    crypto::Bytearray my_cipher = crypto::aes::encrypt_aes(plain, key, iv, crypto::aes::CTR);
     
-    crypto::Bytearray my_decipher = crypto::aes::decrypt_aes(my_cipher, key);
+    crypto::Bytearray my_decipher = crypto::aes::decrypt_aes(my_cipher, key, iv, crypto::aes::CTR);
 
     bool round_error = false;
 
@@ -75,6 +77,8 @@ int main(){
       cout << "Decrypt error in test number [" << i << "] -> Expected: " << tests[i].plain << " | Calculated: " << my_decipher.hex() << endl;
       round_error = true;
     }
+
+    iv++;
 
     if (!round_error) {
       passed++;

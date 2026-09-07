@@ -119,6 +119,13 @@ class Bytearray{
     return this->bytes.end();
   }
   
+  uint8_t* data() {
+    return this->bytes.data();
+  }
+  const uint8_t* data() const {
+    return this->bytes.data();
+  }
+
   Bytearray& operator++(int){
     for (size_t i = 1; i <= this->length(); i++){
       this->operator[](-i)++;
