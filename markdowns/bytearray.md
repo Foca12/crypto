@@ -7,9 +7,10 @@ This is a generic container for bytes and serves as the default collection of th
 ## 🏗️ Constructors & Factory Methods
 
 ```cpp
-Bytearray(size_t size = 0) // Creates an array of 'size' bytes initialized to 0
+Bytearray(uint8_t size = 0, size_t value = 0) // Creates an array of size bytes initialized to value
 Bytearray(const std::ranges::contiguous_range auto& bytes) // Assigns a collection of bytes to the Bytearray
 
+static Bytearray from_string(const std::string& str) // Creates a Bytearray from a string; foreach character in str, appends the byte to the result
 static Bytearray from_hex(const std::string& str) // Creates a Bytearray from a hex string; each byte must be exactly 2 characters long
 static Bytearray from_oct(const std::string& str) // Creates a Bytearray from an octal string; each byte must be exactly 3 characters long
 ```
@@ -26,7 +27,7 @@ void erase(int pos) // Removes the element at the specified index (supports nega
 void resize(size_t size) // Resizes the Bytearray by inserting or removing bytes until it reaches size length
 
 void clear() // Sets all bytes to 0 and clears the content
-void fill(uint8_t x = 0) // Fills the entire container with the value 'x'
+void fill(uint8_t x = 0) // Fills the entire container with the value x
 
 Bytearray& operator++(int) // Increments the Bytearray considering the list as one number (prevents overflow by adding another digit)
 Bytearray& operator++()    // Same as before
@@ -39,12 +40,14 @@ Bytearray& operator=(const Bytearray& x) // Copy assignment operator
 ## 🔍 Inspection & Access (Const)
 
 ```cpp
+bool operator==(const Bytearray&) const // Returns true if both bytearray.bytes are the same, otherwise returnes false
+
 size_t length() const // Returns the Bytearray length
 size_t size() const   // Same as length()
 
-Bytearray slice(int start, int stop, size_t step) const // Slices the Bytearray from 'start' to 'stop', jumping by 'step'
-Bytearray slice(int start, int stop) const              // Slices the Bytearray from 'start' to 'stop' with step = 1
-Bytearray slice(int stop) const                         // Slices the Bytearray from index 0 to 'stop' with step = 1
+Bytearray slice(int start, int stop, size_t step) const // Slices the Bytearray from start to stop, jumping by step
+Bytearray slice(int start, int stop) const              // Slices the Bytearray from start to stop with step = 1
+Bytearray slice(int stop) const                         // Slices the Bytearray from index 0 to stop with step = 1
 
 const uint8_t& operator[](int idx) const // Read-only access (supports negative indexing)
 uint8_t& operator[](int idx)             // Read-write access (supports negative indexing)
@@ -58,22 +61,22 @@ crypto_types::ilist_iterator begin()         // Iterator to the beginning
 crypto_types::ilist_c_iterator end() const   // Constant iterator to the end
 crypto_types::ilist_iterator end()           // Iterator to the end
 
-const uint8_t* data() const // Returns constant pointer to first element
-uint8_t* data()            // Returns pointer to first element
+const uint8_t* data() const // Constant pointer to first element
+uint8_t* data()             // Pointer to first element
 ```
 
 ## 🔀 Bitwise & Shift Operations
 
 ```cpp
-Bytearray shift_right(size_t rounds) const // Circular right shift of elements by 'rounds'
-Bytearray shift_left(size_t rounds) const  // Circular left shift of elements by 'rounds'
+Bytearray shift_right(size_t rounds) const // Circular right shift of elements by rounds
+Bytearray shift_left(size_t rounds) const  // Circular left shift of elements by rounds
 
 Bytearray operator|(const Bytearray& arr) const  // Element-wise bitwise OR
 Bytearray operator&(const Bytearray& arr) const  // Element-wise bitwise AND
 Bytearray operator^(const Bytearray& arr) const  // Element-wise bitwise XOR
 Bytearray operator~() const                      // Element-wise bitwise NOT
-Bytearray operator<<(size_t rounds) const        // Bitwise left shift by 'rounds'
-Bytearray operator>>(size_t rounds) const        // Bitwise right shift by 'rounds'
+Bytearray operator<<(size_t rounds) const        // Bitwise left shift by rounds
+Bytearray operator>>(size_t rounds) const        // Bitwise right shift by rounds
 
 Bytearray& operator|=(const Bytearray& arr)  // Element-wise bitwise OR assignment
 Bytearray& operator&=(const Bytearray& arr)  // Element-wise bitwise AND assignment
@@ -85,7 +88,7 @@ Bytearray& operator>>=(size_t rounds)        // Bitwise right shift assignment
 ## 💱 Conversions & Type Casting
 
 ```cpp
-operator std::string() const // Returns an ASCII string if all bytes are valid, otherwise returns hex values formatted with '\x'
+operator std::string() const // Returns an ASCII string if all bytes are valid, otherwise returns hex values formatted with \x
 operator crypto_types::ilist() const // Converts and returns the Bytearray as a crypto_types::ilist
 
 std::string hex() const // Converts all bytes to a hex-formatted string
